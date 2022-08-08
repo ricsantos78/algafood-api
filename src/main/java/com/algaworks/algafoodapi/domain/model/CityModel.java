@@ -5,6 +5,7 @@ import lombok.Data;
 import javax.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -16,7 +17,7 @@ public class CityModel implements Serializable {
     @Id // Chave primária
     @GeneratedValue(strategy = GenerationType.AUTO) // Gerador de chave primária
     @Column(name = "ID_CITY") // Nome da coluna no banco de dados
-    private Long id;
+    private UUID id;
 
     @Column(name = "NM_CITY", nullable = false) // Nome da coluna no banco de dados
     private String name; // Nome da cidade

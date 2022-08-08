@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -22,19 +21,18 @@ public class KitchenController {
 
     @GetMapping
     public ResponseEntity<List<KitchenModel>> findAll() {
-        List<KitchenModel> kitchens = kitchenService.findAll();
-        return ResponseEntity.ok(kitchens);
+        return ResponseEntity.ok(kitchenService.findAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Object> findById(@PathVariable UUID id){
-        Optional<KitchenModel> kitchenModelOptional = kitchenService.findById(id);
-        return kitchenModelOptional.<ResponseEntity<Object>>map(ResponseEntity::ok)
+        var kitchenFindById = kitchenService.findById(id);
+        return kitchenFindById.<ResponseEntity<Object>>map(ResponseEntity::ok)
                 .orElseGet(()-> ResponseEntity.status(HttpStatus.NOT_FOUND).body("Kitchen Not Found"));
     }
 
     @PostMapping
-    public ResponseEntity<Object> save(@RequestBody KitchenDto kitchenDto){
+    public ResponseEntity<Object> add(@RequestBody KitchenDto kitchenDto){
         if(Boolean.TRUE.equals(kitchenService.existsByName(kitchenDto.getName()))){
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Conflict : Kitchen name already exists");
         }
@@ -46,8 +44,8 @@ public class KitchenController {
     @PutMapping("/{id}")
     public ResponseEntity<Object> update(@PathVariable UUID id
     ,@RequestBody KitchenDto kitchenDto){
-        Optional<KitchenModel> kitchenOpt = kitchenService.findById(id);
-        if(kitchenOpt.isEmpty()){
+        var kitchenFindById = kitchenService.findById(id);
+        if(kitchenFindById.isEmpty()){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Kitchen Not Found");
         }
         if(Boolean.TRUE.equals(kitchenService.existsByName(kitchenDto.getName()))){
@@ -56,18 +54,18 @@ public class KitchenController {
 
         KitchenModel kitchenModel = new KitchenModel();
         BeanUtils.copyProperties(kitchenDto, kitchenModel);
-        kitchenModel.setId(kitchenOpt.get().getId());
+        kitchenModel.setId(kitchenFindById.get().getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(kitchenService.save(kitchenModel));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable UUID id){
         try {
-            Optional<KitchenModel> kitchenOpt = kitchenService.findById(id);
-            if (kitchenOpt.isEmpty()) {
+            var kitchenFindById = kitchenService.findById(id);
+            if (kitchenFindById.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Kitchen Not Found");
             }
-            kitchenService.delete(kitchenOpt.get());
+            kitchenService.delete(kitchenFindById.get());
             return ResponseEntity.status(HttpStatus.OK).body("Kitchen deleted successfully");
         }catch (DataIntegrityViolationException e){
             return ResponseEntity.status(HttpStatus.CONFLICT).body("There is a restaurant attached to this type of Kitchen.");
